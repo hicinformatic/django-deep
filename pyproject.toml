@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-deep"
+version = "0.1.0"
+description = "Django Enhanced Expression Parser"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "GPL-3.0-or-later"}
+authors = [
+  { name = "hicinformatic", email = "hicinformatic@gmail.com" }
+]
+dependencies = []
+
+[project.urls]
+"Homepage" = "https://github.com/hicinformatic/django-deep"
+
+[project.optional-dependencies]
+django = ["Django>=3.2"]

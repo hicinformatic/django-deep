@@ -1,0 +1,11 @@
+MANIFEST.in
+README
+README.md
+setup.py
+django_deep/__init__.py
+django_deep.egg-info/PKG-INFO
+django_deep.egg-info/SOURCES.txt
+django_deep.egg-info/dependency_links.txt
+django_deep.egg-info/requires.txt
+django_deep.egg-info/top_level.txt
+tests/test_deep.py

@@ -1,0 +1,43 @@
+Metadata-Version: 2.1
+Name: django-deep
+Version: 0.1
+Summary: Django Enhanced Expression Parser for SQL filtering.
+Home-page: https://github.com/toncompte/django-deep
+Author: Hic Informatic
+Author-email: hicinformatic@gmail.com
+Classifier: Framework :: Django
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Description-Content-Type: text/markdown
+
+
+# Django Enhanced Expression Parser
+
+Django Deep est une bibliothèque permettant de créer des filtres SQL complexes à l'aide d'expressions dynamiques dans Django.
+
+## Installation
+
+```bash
+pip install django-deep
+```
+
+## Utilisation
+
+Exemple d’utilisation de la bibliothèque pour créer une expression de filtrage SQL :
+
+url/?sum=
+
+```python
+from django_deep import DeepParser
+
+params = {
+    'f': ''
+    'o': 'cat'
+    'x': 'f(cat, 2)'
+    'i': 'f(cat, 1)'
+    'd': 'cat'
+}
+
+qs = Model.objects.all()
+parser = DeepParser(qs, )
+```
