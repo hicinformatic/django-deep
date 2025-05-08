@@ -6,8 +6,8 @@ setup(
     version="0.1",  # La version du package
     packages=find_packages(),  # Détecte tous les modules dans django_deep/
     include_package_data=True,  # Inclut des fichiers supplémentaires définis dans MANIFEST.in
-    install_requires=[         # Les dépendances nécessaires
-        "django>=3.0",  # Exemple: dépendance à une version de Django
+    install_requires=[  # Les dépendances nécessaires
+        "Django>=3.2",  # Exemple: dépendance à une version de Django
     ],
     author="Ton Nom",
     author_email="ton.email@example.com",

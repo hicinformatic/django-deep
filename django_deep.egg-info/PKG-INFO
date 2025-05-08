@@ -1,14 +1,20 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: django-deep
-Version: 0.1
-Summary: Django Enhanced Expression Parser for SQL filtering.
+Version: 0.1.0
+Summary: Django Enhanced Expression Parser
 Home-page: https://github.com/toncompte/django-deep
 Author: Ton Nom
-Author-email: ton.email@example.com
-Classifier: Framework :: Django
-Classifier: Programming Language :: Python :: 3
-Classifier: License :: OSI Approved :: MIT License
+Author-email: hicinformatic <hicinformatic@gmail.com>
+License: GPL-3.0-or-later
+Project-URL: Homepage, https://github.com/hicinformatic/django-deep
+Requires-Python: >=3.7
 Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: django
+Requires-Dist: Django>=3.2; extra == "django"
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
 
 
 # Django Enhanced Expression Parser
