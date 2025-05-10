@@ -1,3 +1,7 @@
-
-[django]
 Django>=3.2
+
+[dev]
+black
+ruff
+pytest
+pytest-django

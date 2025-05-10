@@ -12,10 +12,24 @@ license = {text = "GPL-3.0-or-later"}
 authors = [
   { name = "hicinformatic", email = "hicinformatic@gmail.com" }
 ]
-dependencies = []
+dependencies = ["Django>=3.2"]
 
 [project.urls]
 "Homepage" = "https://github.com/hicinformatic/django-deep"
 
 [project.optional-dependencies]
-django = ["Django>=3.2"]
+dev = [
+    "black",
+    "ruff",
+    "pytest",
+    "pytest-django",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+select = ["E", "F"]

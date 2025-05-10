@@ -1,6 +1,6 @@
 import pytest
-from .setup import setup_data
-from tests import models
+from ..testapp.setup import setup_data
+from ..testapp import models
 import csv
 
 

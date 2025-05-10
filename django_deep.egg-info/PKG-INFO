@@ -10,8 +10,12 @@ Project-URL: Homepage, https://github.com/hicinformatic/django-deep
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
 License-File: LICENSE
-Provides-Extra: django
-Requires-Dist: Django>=3.2; extra == "django"
+Requires-Dist: Django>=3.2
+Provides-Extra: dev
+Requires-Dist: black; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-django; extra == "dev"
 Dynamic: author
 Dynamic: home-page
 Dynamic: license-file
