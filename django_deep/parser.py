@@ -1,5 +1,5 @@
 import operator
-import config as cfg
+from . import config as cfg
 
 
 class DeepParser:

@@ -12,6 +12,16 @@ license = {text = "GPL-3.0-or-later"}
 authors = [
   { name = "hicinformatic", email = "hicinformatic@gmail.com" }
 ]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Framework :: Django",
+]
+keywords = ["django", "parser", "expression", "deep"]
 dependencies = ["Django>=3.2"]
 
 [project.urls]

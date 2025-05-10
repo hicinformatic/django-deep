@@ -17,7 +17,7 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class Role(BaseModel):
+class Role(models.Model):
     name = models.CharField(max_length=100, unique=True)
     nb_users = models.IntegerField(default=0)
 

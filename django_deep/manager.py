@@ -1,6 +1,6 @@
 from django.db.models import Manager
-from functions import JsonExtract
-from subqueries import (
+from .functions import JsonExtract
+from .subqueries import (
     ConcatValuesSubquery,
     CountSubquery,
     SumSubquery,

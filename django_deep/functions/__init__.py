@@ -1,1 +1,1 @@
-from jsonextract import JsonExtract
+from .jsonextract import JsonExtract

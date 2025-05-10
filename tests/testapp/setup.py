@@ -1,4 +1,4 @@
-from models import Role, User, Email
+from .models import Role, User, Email
 import pytest
 import csv
 
