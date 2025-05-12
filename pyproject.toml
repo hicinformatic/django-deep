@@ -24,6 +24,9 @@ classifiers = [
 keywords = ["django", "parser", "expression", "deep"]
 dependencies = ["Django>=3.2"]
 
+[tool.setuptools.dynamic]
+version = { attr = "django_deep.__version__" }
+
 [project.urls]
 "Homepage" = "https://github.com/hicinformatic/django-deep"
 

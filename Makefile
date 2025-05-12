@@ -18,6 +18,9 @@ install:
 test:
 	$(VENV)/bin/pytest
 
+test-django:
+	PYTHONPATH=$(shell pwd) $(VENV)/bin/pytest --ds=tests.settings
+
 # Vérifie le style du code avec ruff
 lint:
 	$(VENV)/bin/ruff django_deep/ tests/

@@ -23,9 +23,6 @@ django_deep/subqueries/concatvalues.py
 django_deep/subqueries/count_sum.py
 django_deep/subqueries/jsonagg.py
 django_deep/subqueries/methodfrom.py
-tests/__init__.py
-tests/apps.py
 tests/conftest.py
-tests/models.py
-tests/setup.py
-tests/test_filters.py
+tests/settings.py
+tests/test_django.py
