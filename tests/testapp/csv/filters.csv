@@ -1,0 +1,10 @@
+model,filter,field,value,check,result,exclude
+User,string,username,dave,len,1,0
+User,list,username,"dave,bob,eve",len,3,0
+User,boolean,is_active,1,len,3,0
+User,boolean,is_active,0,len,2,1
+User,choice,gender,M,len,3,0
+Role,integer,nb_users,1,len,1,0
+Role,datetime,created_at,2023-01-01,len,1,0
+Role,date,date_at,2023-01-01,len,1,0
+Role,time,time_at,10:00:00,len,1,0

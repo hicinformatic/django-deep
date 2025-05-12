@@ -1,19 +1,23 @@
 from django.db.models import Q
 import decimal
-from
 
 class DeepBaseFilter:
     """
     Base class for all deep filters.
     """
-
     mask = None
     field = None
 
     def __init__(self, **extra):
+        print('extra', extra)
         for key, value in extra.items():
             if key not in ('self', 'value'):
-                getattr(self, f'set_key_{key}', 'set_key_value')(key, value)
+                print('key', key)
+                print('value', value)
+                if hasattr(self,  f'set_key_{key}'):
+                    getattr(self, f'set_key_{key}')(key, value)
+                else:
+                    self.set_key_value(key, value)
         self.value = extra['value']
 
     def usable(self):
@@ -23,7 +27,7 @@ class DeepBaseFilter:
         setattr(self, key, value)
 
     def get_field(self):
-        return f'__{self.mask}{self.field}' if self.mask else self.field
+        return f'{self.field}__{self.mask}' if self.mask else self.field
 
     def get_value(self):
         return self.value
@@ -32,6 +36,7 @@ class DeepBaseFilter:
         """
         Apply the filter to the queryset.
         """
+        print('field', self.get_field())
         return Q(**{self.get_field(): self.get_value()}) if self.usable() else Q()
 
 
@@ -92,7 +97,8 @@ class DeepDateFilter(DeepBaseFilter):
     """
 
     def usable(self):
-        use timezone
+        #use timezone
+        pass
 
 
 class DeepTimeFilter(DeepBaseFilter):
@@ -101,7 +107,8 @@ class DeepTimeFilter(DeepBaseFilter):
     """
 
     def usable(self):
-        use timezone
+        #use timezone
+        pass
 
 class DeepDateTimeFilter(DeepBaseFilter):
     """
@@ -109,7 +116,8 @@ class DeepDateTimeFilter(DeepBaseFilter):
     """
 
     def usable(self):
-        use timezone
+        #use timezone
+        pass
 
 
 class DeepListFilter(DeepBaseFilter):
@@ -121,8 +129,10 @@ class DeepListFilter(DeepBaseFilter):
 
     def get_value(self):
         value = super().get_value()
+        print('list_value', value)
         if isinstance(value, str):
             value = value.split(',')
+        print("value final", value)
         return [v for v in value if v in self.authorized] if len(self.authorized) else value
 
 

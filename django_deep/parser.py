@@ -20,30 +20,20 @@ class DeepParser:
         _distinct = 'd'
         _order = 'o'
 
-    def __init__(self, queryset, request, *args, **kwargs):
+    def __init__(self, queryset, params={}, *args, **kwargs):
         self.queryset = queryset
-        self.request = request
         self.compiled = []
         self.families = []
         self.context = []
         self.filter_idandargs = []
         self.operators = []
         self.idorarg = ''
-        self.method = kwargs.get('method', 'GET')
-        self.method_request = getattr(self.request, self.method)
-        self.filters = {
-            fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])
-        }
-        self.tokens = (
-            cfg._filter
-            + cfg._family
-            + [cfg._split, cfg._or]
-        )
-        self.include = self.execute(request.GET.get(self.Param._include, False))
-        self.exclude = self.execute(request.GET.get(self.Param._exclude, False))
-        self.order = self.method_request.get(
-            self.Param._order, kwargs.get('order', False)
-        )
+        self.params = params
+        self.filters = {fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])}
+        self.tokens = (cfg._filter + cfg._family + [cfg._split, cfg._or])
+        self.include = self.execute(params.get(self.Param._include, False))
+        self.exclude = self.execute(params.get(self.Param._exclude, False))
+        self.order = self.params.get(self.Param._order, kwargs.get('order'))
         self.order_base = kwargs.get('order_base', [])
         self.distinct = kwargs.get('distinct', False)
         self.order_enable = kwargs.get('order_enable', False)
@@ -133,7 +123,7 @@ class DeepParser:
                 else cfg._split.join(self.filter_idandargs[1:])
             )
             self.filter_idandargs = []
-            return fltr.sql(self.request, method_request={fltr.param: args})
+            return fltr.sql(self.params, params={fltr.param: args})
         return False
 
     def apply_operators(self, filters):
@@ -177,7 +167,7 @@ class DeepParser:
             result for arg in args if (result := self.get_arg_order(arg)) is not None
         ]
 
-    def ready(self):
+    def get_queryset(self):
         if self.include:
             self.queryset = self.queryset.filter(self.include)
         if self.exclude:

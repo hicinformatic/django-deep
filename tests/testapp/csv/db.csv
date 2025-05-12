@@ -1,0 +1,9 @@
+username,role,email,gender,is_active
+alice,admin,alice@email.com,W,1
+dave,admin,date@email.com,M,1
+bob,moderator,bob@email.com,M,1
+bob,user,bob@email.com,M,1
+charlie,user,charlie@email.com,O,0
+charlie,guest,charlie@email.com,O,0
+alice,guest,alice@email.com,W,1
+eve,guest,eve@email.com,,0
