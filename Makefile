@@ -29,6 +29,12 @@ lint:
 format:
 	$(VENV)/bin/black django_deep/ tests/
 
+migrations:
+	$(VENV)/bin/python manage.py makemigrations
+
+django-shell:
+	$(VENV)/bin/python manage.py shell
+
 # Nettoyage des fichiers temporaires
 clean:
 	find . -type d -name '__pycache__' -exec rm -rf {} +

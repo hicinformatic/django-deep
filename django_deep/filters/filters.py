@@ -1,5 +1,28 @@
 from django.db.models import Q
 import decimal
+from datetime import datetime, date
+from django.utils import timezone
+from django.utils.dateparse import parse_time
+
+
+def secure_datetime(dt, iso=True):
+    """
+    Retourne un datetime timezone-aware. Si le datetime est naïf, le convertit en timezone active.
+    """
+    if not iso:
+        dt = datetime.fromisoformat(dt)
+    if timezone.is_naive(dt):
+        return timezone.make_aware(dt)
+    return dt
+
+
+def secure_time(t):
+    today = date.today()
+    parsed_time = parse_time(t)
+    naive_dt = datetime.combine(today, parsed_time)
+    aware_dt = secure_datetime(naive_dt)
+    return aware_dt.time()
+
 
 class DeepBaseFilter:
     """
@@ -9,11 +32,8 @@ class DeepBaseFilter:
     field = None
 
     def __init__(self, **extra):
-        print('extra', extra)
         for key, value in extra.items():
             if key not in ('self', 'value'):
-                print('key', key)
-                print('value', value)
                 if hasattr(self,  f'set_key_{key}'):
                     getattr(self, f'set_key_{key}')(key, value)
                 else:
@@ -36,8 +56,9 @@ class DeepBaseFilter:
         """
         Apply the filter to the queryset.
         """
-        print('field', self.get_field())
-        return Q(**{self.get_field(): self.get_value()}) if self.usable() else Q()
+        test = Q(**{self.get_field(): self.get_value()}) if self.usable() else Q()
+        print("Q used", test)
+        return test
 
 
 class DeepStringFilter(DeepBaseFilter):
@@ -96,28 +117,28 @@ class DeepDateFilter(DeepBaseFilter):
     Filter for date equality.
     """
 
-    def usable(self):
-        #use timezone
-        pass
+    def get_value(self):
+        value = super().get_value()
+        return secure_datetime(value, False).date()
 
 
 class DeepTimeFilter(DeepBaseFilter):
     """
     Filter for time equality.
     """
+    def get_value(self):
+        value = super().get_value()
+        return secure_time(value)
 
-    def usable(self):
-        #use timezone
-        pass
 
 class DeepDateTimeFilter(DeepBaseFilter):
     """
     Filter for datetime equality.
     """
 
-    def usable(self):
-        #use timezone
-        pass
+    def get_value(self):
+        value = super().get_value()
+        return secure_datetime(value, False).date()
 
 
 class DeepListFilter(DeepBaseFilter):
@@ -129,10 +150,8 @@ class DeepListFilter(DeepBaseFilter):
 
     def get_value(self):
         value = super().get_value()
-        print('list_value', value)
         if isinstance(value, str):
             value = value.split(',')
-        print("value final", value)
         return [v for v in value if v in self.authorized] if len(self.authorized) else value
 
 
