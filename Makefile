@@ -1,4 +1,4 @@
-PYTHON=python
+PYTHON := $(or $(PYTHON_ENV),  /usr/bin/python3)
 VENV=venv
 ACTIVATE=. $(VENV)/bin/activate
 
@@ -16,10 +16,7 @@ install:
 
 # Lancer les tests avec pytest
 test:
-	$(VENV)/bin/pytest
-
-test-django:
-	PYTHONPATH=$(shell pwd) $(VENV)/bin/pytest --ds=tests.settings
+	PYTHONPATH=$(shell pwd) $(VENV)/bin/pytest --ds=tests.settings -o log_cli=true --log-level=DEBUG
 
 # Vérifie le style du code avec ruff
 lint:
@@ -35,7 +32,6 @@ migrations:
 django-shell:
 	$(VENV)/bin/python manage.py shell
 
-# Nettoyage des fichiers temporaires
 clean:
 	find . -type d -name '__pycache__' -exec rm -rf {} +
 	rm -rf .pytest_cache .mypy_cache .coverage dist build *.egg-info

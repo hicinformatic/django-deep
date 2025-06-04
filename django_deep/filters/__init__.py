@@ -11,6 +11,8 @@ from .filters import (
     DeepFloatFilter,
     DeepListFilter,
     DeepChoiceFilter,
+    secure_datetime,
+    secure_time,
 )
 
 deep_filters_association = {
@@ -25,3 +27,4 @@ deep_filters_association = {
     'list': DeepListFilter,
     'choice': DeepChoiceFilter,
 }
+

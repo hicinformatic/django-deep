@@ -1,5 +1,6 @@
 import operator
 from . import config as cfg
+from django.db.models import Count
 
 
 class DeepParser:
@@ -167,20 +168,37 @@ class DeepParser:
             result for arg in args if (result := self.get_arg_order(arg)) is not None
         ]
 
-    def get_queryset(self):
+    def _apply_include(self):
         if self.include:
             self.queryset = self.queryset.filter(self.include)
+
+    def _apply_exclude(self):
         if self.exclude:
             self.queryset = self.queryset.exclude(self.exclude)
+
+    def _apply_distinct(self):
         if self.distinct:
-            if isinstance(self.distinct, str) and self.distinct == 'auto':
-                self.queryset.filter(
-                    id__in=self.queryset.distinct(*self.qdistinct).values('id')
-                )
-            elif isinstance(self.distinct, bool):
+            distinct_method = type(self.distinct)
+            if distinct_method == str:
+                if self.distinct == 'count':
+                    self.queryset = self.queryset.annotate(Count('id'))
+                else:
+                    self.queryset = self.queryset.distinct(self.distinct)
+            elif distinct_method == bool:
                 self.queryset = self.queryset.distinct()
-            elif isinstance(self.distinct, list):
+            elif distinct_method in [list, tuple]:
                 self.queryset = self.queryset.distinct(*self.distinct)
-        if self.order_enable and self.order_by():
-            self.queryset = self.queryset.order_by(*self.order_by())
+
+    def _apply_ordering(self):
+        ob = self.order_by()
+        if self.order_enable and ob:
+            self.queryset = self.queryset.order_by(*ob)
+
+    def get_queryset(self):
+        self._apply_include()
+        self._apply_exclude()
+        self._apply_distinct()
+        self._apply_ordering()
         return self.queryset
+
+

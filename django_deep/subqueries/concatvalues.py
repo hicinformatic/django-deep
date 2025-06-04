@@ -1,18 +1,23 @@
 from typing import ClassVar
 
+from django.conf import settings
 from django.db import connection as db_connection
 from django.db.models import CharField, Subquery
 
 
+concat_separator = getattr(settings, 'CONCAT_SEPARATOR', ':)(:')
+concat_symbol = getattr(settings, 'CONCAT_SYMBOL', '(::)')
+
+
 class ConcatValuesSubquery(Subquery):
     """A Django Subquery class to concatenate values from a queryset."""
-
+    separator: ClassVar[str] = concat_separator
     templates: ClassVar[dict] = {
-        'postgresql': "(SELECT STRING_AGG(%(string_contact)s, ',') FROM (%(subquery)s) %(name)s)",
+        'postgresql': "(SELECT STRING_AGG(%(string_contact)s, '%(separator)s') FROM (%(subquery)s) %(name)s)",
         'mysql': '(SELECT GROUP_CONCAT(%(string_contact)s) FROM (%(subquery)s) %(name)s)',
     }
     template_ifnull: ClassVar[str] = 'COALESCE(%s, %s)'
-    concat: ClassVar[str] = "'(::)'"
+    concat: ClassVar[str] = f"'{concat_symbol}'"
     output_field = CharField()
 
     def raise_not_implemented(self, conf):
@@ -31,7 +36,7 @@ class ConcatValuesSubquery(Subquery):
     def get_concat(self, fields, **extra):
         fs = [self.ifnull(field, **extra) for field in fields]
         fs = f'|{self.concat}|'.join(fs).split('|')
-        return f'CONCAT({", ".join(fs)})'
+        return f'CONCAT({self.separator.join(fs)})'
 
     def get_postgresql_concat(self, fields, **extra):
         return f'||{self.concat}||'.join([
@@ -64,6 +69,7 @@ class ConcatValuesSubquery(Subquery):
         else:
             self.raise_not_implemented(getm)
         extra['name'] = extra.get('name', '_concat')
+        extra['separator'] = self.separator
         self.concat = extra.get('concat', self.concat)
         super().__init__(queryset, output_field, **extra)
 
@@ -78,12 +84,12 @@ class ConcatValuesSubquery(Subquery):
 def split_concat(stats, fields, **kwargs):
     """Split and concatenate stats with fields."""
     if stats:
-        concat = kwargs.get('concat', '(::)')
-        separator = kwargs.get('separator', ',')
-        total = kwargs.get('total', 'total')
+        concat = kwargs.get('concat', concat_symbol)
+        separator = kwargs.get('separator', concat_separator)
+        int_fields = kwargs.get('int_fields', ['total'])
         return [
             {
-                field: int(s[idx]) if field == total else s[idx]
+                field: int(s[idx]) if field in int_fields else s[idx]
                 for idx, field in enumerate(fields)
             }
             for stat in stats.split(separator)

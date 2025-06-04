@@ -26,7 +26,10 @@ GROUP BY %(group_by)s) as subquery) as s2)"""
 
 
 class MethodFromSubquery(Subquery):
-    """A Django Subquery class to count the number of value in a JSON dataset from a queryset."""
+    """
+    A Django Subquery class to count the number of value in a JSON dataset
+    from a queryset.
+    """
 
     template_json = json_template
     template_concat = concat_template

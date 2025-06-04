@@ -1,0 +1,3 @@
+model,url,json
+User,f=(username=bob)|,{"username": "bob"}
+User,username

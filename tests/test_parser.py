@@ -22,36 +22,36 @@ def check_order_by(row, qs, negative=False):
 def check_order_by_negative(row, qs):
     check_order_by(row, qs, negative=True)
 
+def check_distinct(qs, test, check):
+    initial = qs.count()
+    check = check.count()
+    test = test.get_queryset().count()
+    logger.debug(f'check: {check}, test: {test}')
+    assert test == check and check < initial and test < initial
 
 def check_distinct_count(row, qs, negative=False):
     field = row['field']
     qs = qs.filter(**{f'{field}__isnull': False})
-    initial = qs.count()
-    check = qs.annotate(Count('id')).count()
-    test = DeepParser(queryset=qs, distinct="count").get_queryset().count()
-    logger.debug(f'distinct: {field}, initial: {initial}, check: {check}, test: {test}')
-    assert test == check and check < initial and test < initial
+    check = qs.annotate(Count('id'))
+    test = DeepParser(queryset=qs, distinct="count")
+    check_distinct(qs, test, check)
 
 
-def check_distinct(row, qs):
+def check_distinct_bool(row, qs):
     field = row['field']
     qs = qs.filter(**{f'{field}__isnull': False})
-    initial = qs.count()
-    check = qs.distinct().count()
-    test = DeepParser(queryset=qs, distinct=True).get_queryset().count()
-    logger.debug(f'distinct: {field}, initial: {initial}, check: {check}, test: {test}')
-    assert test == check and check < initial and test < initial
+    check = qs.distinct()
+    test = DeepParser(queryset=qs, distinct=True)
+    check_distinct(qs, test, check)
 
 
 def check_distinct_field(row, qs):
     if db_connection.vendor != 'sqlite':
         field = row['field']
         qs = qs.filter(**{f'{field}__isnull': False})
-        initial = qs.count()
-        check = qs.values(field).distinct(row['value']).count()
-        test = DeepParser(queryset=qs, distinct=row['value']).get_queryset().count()
-        logger.debug(f'distinct: {field}, initial: {initial}, check: {check}, test: {test}')
-        assert test == check and check < initial and test < initial
+        check = qs.values(field).distinct(row['value'])
+        test = DeepParser(queryset=qs, distinct=row['value'])
+        check_distinct(qs, test, check)
     else:
         logger.warning('Distinct field test is not supported for SQLite, skipping.')
 
@@ -60,12 +60,10 @@ def check_distinct_list(row, qs):
     if db_connection.vendor != 'sqlite':
         field = row['field']
         qs = qs.filter(**{f'{field}__isnull': False})
-        initial = qs.count()
         values = row['value'].split(':')
-        check = qs.values(*values).distinct().count()
-        test = DeepParser(queryset=qs, distinct_list=values).get_queryset().count()
-        logger.debug(f'distinct: {field}, initial: {initial}, check: {check}, test: {test}')
-        assert test == check and check < initial and test < initial
+        check = qs.values(*values).distinct()
+        test = DeepParser(queryset=qs, distinct_list=values)
+        check_distinct(qs, test, check)
     else:
         logger.warning('Distinct list test is not supported for SQLite, skipping.')
 
@@ -76,6 +74,7 @@ def test_queryset(setup_data):
     with open(csv_file, 'r') as file:
         reader = csv.DictReader(file)
         for row in reader:
+            logger.info(f'Testing queryset: {row}')
             qs = getattr(models, row.get('model')).objects.all()
             test = f'check_{row["test"]}'
             logger.debug(f'Running test: {test}')

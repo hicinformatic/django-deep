@@ -3,25 +3,7 @@ import csv
 from datetime import datetime, date
 from django.utils import timezone
 from django.utils.dateparse import parse_time
-
-
-def secure_datetime(dt, iso=True):
-    """
-    Retourne un datetime timezone-aware. Si le datetime est naïf, le convertit en timezone active.
-    """
-    if not iso:
-        dt = datetime.fromisoformat(dt)
-    if timezone.is_naive(dt):
-        return timezone.make_aware(dt)
-    return dt
-
-
-def secure_time(t):
-    today = date.today()
-    parsed_time = parse_time(t)
-    naive_dt = datetime.combine(today, parsed_time)
-    aware_dt = secure_datetime(naive_dt)
-    return aware_dt.time()
+from django_deep.filters import secure_datetime, secure_time
 
 
 @pytest.fixture
@@ -37,8 +19,8 @@ def setup_data(db):
             role, created = Role.objects.get_or_create(name=row['role'])
 
             data = {}
-            #if row['created_at']:
-            #    data['created_at'] = secure_datetime(row['created_at'], False).isoformat()
+            if row['created_at']:
+                data['created_at'] = secure_datetime(row['created_at'], False)
             if row['date_at']:
                 data['date_at'] = secure_datetime(row['date_at'], False).date()
             if row['time_at']:
@@ -46,6 +28,8 @@ def setup_data(db):
             user, created = User.objects.get_or_create(username=row['username'], **data)
 
             Email.objects.get_or_create(email=row['email'], user=user)
+            for i in range(2):  # 2 emails par utilisateur
+                Email.objects.get_or_create(user=user, email=f"{user.username}_{i}@example.com")
             user.roles.add(role)
 
     roles = Role.objects.all()

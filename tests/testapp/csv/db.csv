@@ -7,3 +7,4 @@ charlie,user,charlie@email.com,O,0,,,
 charlie,guest,charlie@email.com,O,0,,,
 alice,guest,alice@email.com,W,1,2022-01-02 11:00:00,2023-01-01,10:00:00
 eve,guest,eve@email.com,,0,,,
+bobby,guest,booby@email.com,,0,,,
