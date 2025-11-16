@@ -7,7 +7,7 @@ class SumSubquery(Subquery):
     """A Django Subquery class to sum the values from a queryset."""
 
     template: ClassVar[str] = (
-        '(SELECT SUM(%(sum_field)s) FROM (%(subquery)s) %(name)s)'
+        '(SELECT COALESCE(SUM(%(sum_field)s), 0) FROM (%(subquery)s) %(name)s)'
     )
     output_field = PositiveIntegerField()
 
@@ -28,7 +28,7 @@ class CountSubquery(Subquery):
     """A Django Subquery class to count the number of rows from a queryset."""
 
     template: ClassVar[str] = (
-        '(SELECT Count(%(count_field)s) FROM (%(subquery)s) %(name)s)'
+        '(SELECT COALESCE(Count(%(count_field)s), 0) FROM (%(subquery)s) %(name)s)'
     )
     output_field = PositiveIntegerField()
 

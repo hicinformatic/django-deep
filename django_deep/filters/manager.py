@@ -92,7 +92,6 @@ class DeepFilterManager:
         self.check_mandatory_filters(params)
 
         active_filters = []
-        print(self.filters)
         for filter_instance in self.filters:
             activated_filter = self.activate_filter(params, filter_instance)
             if activated_filter:
