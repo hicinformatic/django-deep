@@ -4,11 +4,12 @@ from django.db.models.sql import Query
 
 
 class MemoryQuerySet(QuerySet):
-    """A QuerySet that operates in memory, useful for testing or when the data is already loaded."""
+    """
+    A QuerySet that operates in memory,
+    useful for testing or when the data is already loaded.
+    """
 
-    def __init__(
-        self, model=None, data=None, query=None, using=None, hints=None
-    ):
+    def __init__(self, model=None, data=None, query=None, using=None, hints=None):
         if query is None and model is not None:
             query = Query(model)
         super().__init__(model=model, query=query, using=using, hints=hints)
@@ -60,12 +61,10 @@ class MemoryQuerySet(QuerySet):
         rslt = self._result_cache
         for field in reversed(fields):
             reverse = False
-            if field.startswith('-'):
+            if field.startswith("-"):
                 reverse = True
                 field = field[1:]  # noqa: PLW2901
-            rslt = sorted(
-                rslt, key=lambda x: getattr(x, field, None), reverse=reverse
-            )
+            rslt = sorted(rslt, key=lambda x: getattr(x, field, None), reverse=reverse)
         return self.__class__(
             self.model,
             rslt,
@@ -83,8 +82,8 @@ class MemoryQuerySet(QuerySet):
             return rslt[0]
         if not rslt:
             raise ObjectDoesNotExist(
-                f'{self.model.__name__} matching query does not exist.'
+                f"{self.model.__name__} matching query does not exist."
             )
         raise MultipleObjectsReturned(
-            f'Multiple {self.model.__name__} objects returned.'
+            f"Multiple {self.model.__name__} objects returned."
         )

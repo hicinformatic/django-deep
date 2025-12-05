@@ -4,6 +4,7 @@ from datetime import datetime, date
 from django.utils import timezone
 from django.utils.dateparse import parse_time
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -31,26 +32,27 @@ class DeepBaseFilter:
     """
     Base class for all deep filters.
     """
+
     mask = None
     field = None
 
     def __init__(self, **extra):
         for key, value in extra.items():
-            if key not in ('self', 'value'):
-                if hasattr(self,  f'set_key_{key}'):
-                    getattr(self, f'set_key_{key}')(key, value)
+            if key not in ("self", "value"):
+                if hasattr(self, f"set_key_{key}"):
+                    getattr(self, f"set_key_{key}")(key, value)
                 else:
                     self.set_key_value(key, value)
-        self.value = extra['value']
+        self.value = extra["value"]
 
     def usable(self):
-        return (self.get_value() is not None)
+        return self.get_value() is not None
 
     def set_key_value(self, key, value):
         setattr(self, key, value)
 
     def get_field(self):
-        return f'{self.field}__{self.mask}' if self.mask else self.field
+        return f"{self.field}__{self.mask}" if self.mask else self.field
 
     def get_value(self):
         return self.value
@@ -83,9 +85,9 @@ class DeepBooleanFilter(DeepBaseFilter):
 
     def check_value(self, value):
         if isinstance(value, str):
-            if value.lower() in ('true', '1', 'yes'):
+            if value.lower() in ("true", "1", "yes"):
                 return True
-            elif value.lower() in ('false', '0', 'no'):
+            elif value.lower() in ("false", "0", "no"):
                 return False
         elif isinstance(value, bool):
             return value
@@ -144,6 +146,7 @@ class DeepDateFilter(DeepBaseFilter):
     """
     Filter for date equality.
     """
+
     secure_date = False
 
     def get_value(self):
@@ -155,6 +158,7 @@ class DeepTimeFilter(DeepBaseFilter):
     """
     Filter for time equality.
     """
+
     secure_time = False
 
     def get_value(self):
@@ -166,6 +170,7 @@ class DeepDateTimeFilter(DeepBaseFilter):
     """
     Filter for datetime equality.
     """
+
     secure_datetime = False
 
     def get_value(self):
@@ -177,9 +182,9 @@ class DeepListFilter(DeepBaseFilter):
     """
     Filter for list equality.
     """
-    mask = 'in'
-    choices = ()
 
+    mask = "in"
+    choices = ()
 
     def usable(self):
         return (self.get_value() in self.choices) if len(self.choices) else True
@@ -187,7 +192,7 @@ class DeepListFilter(DeepBaseFilter):
     def get_value(self):
         value = super().get_value()
         if isinstance(value, str):
-            value = value.split(',')
+            value = value.split(",")
         return [v for v in value if v in self.choices] if len(self.choices) else value
 
 
@@ -195,6 +200,7 @@ class DeepChoiceFilter(DeepBaseFilter):
     """
     Filter for list equality.
     """
+
     choices = []
     association = {}
 
@@ -210,7 +216,8 @@ class DeepMultipleChoiceFilter(DeepBaseFilter):
     """
     Filter for list equality.
     """
-    mask = 'in'
+
+    mask = "in"
     choices = []
     association = {}
 
@@ -220,5 +227,9 @@ class DeepMultipleChoiceFilter(DeepBaseFilter):
     def get_value(self):
         value = super().get_value()
         if isinstance(value, str):
-            value = value.split(',')
-        return [self.association.get(v, v) for v in value if v in self.association] if len(self.association) else value
+            value = value.split(",")
+        return (
+            [self.association.get(v, v) for v in value if v in self.association]
+            if len(self.association)
+            else value
+        )

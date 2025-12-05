@@ -15,11 +15,11 @@ class DeepParser:
     order_authorized = []
 
     class Param:
-        _filters = 'f'
-        _include = 'i'
-        _exclude = 'x'
-        _distinct = 'd'
-        _order = 'o'
+        _filters = "f"
+        _include = "i"
+        _exclude = "x"
+        _distinct = "d"
+        _order = "o"
 
     def __init__(self, queryset, params={}, *args, **kwargs):
         self.queryset = queryset
@@ -28,18 +28,18 @@ class DeepParser:
         self.context = []
         self.filter_idandargs = []
         self.operators = []
-        self.idorarg = ''
+        self.idorarg = ""
         self.params = params
         self.filters = {fltr.id: fltr for fltr in kwargs.get(self.Param._filters, [])}
-        self.tokens = (cfg._filter + cfg._family + [cfg._split, cfg._or])
+        self.tokens = cfg._filter + cfg._family + [cfg._split, cfg._or]
         self.include = self.execute(params.get(self.Param._include, False))
         self.exclude = self.execute(params.get(self.Param._exclude, False))
-        self.order = self.params.get(self.Param._order, kwargs.get('order'))
-        self.order_base = kwargs.get('order_base', [])
-        self.distinct = kwargs.get('distinct', False)
-        self.order_enable = kwargs.get('order_enable', False)
-        self.order_association = kwargs.get('order_association', {})
-        self.order_authorized = kwargs.get('order_authorized', [])
+        self.order = self.params.get(self.Param._order, kwargs.get("order"))
+        self.order_base = kwargs.get("order_base", [])
+        self.distinct = kwargs.get("distinct", False)
+        self.order_enable = kwargs.get("order_enable", False)
+        self.order_association = kwargs.get("order_association", {})
+        self.order_authorized = kwargs.get("order_authorized", [])
         self.separator = cfg._split
         self.negative = cfg._negative
 
@@ -59,7 +59,11 @@ class DeepParser:
 
                     # Ouverture d'un filtre ou d'une famille
                     elif char in {cfg._filter[1], cfg._family[0]}:
-                        if len(self.context) and self.context[-1] == cfg._filter[0] and char == cfg._filter[1]:
+                        if (
+                            len(self.context)
+                            and self.context[-1] == cfg._filter[0]
+                            and char == cfg._filter[1]
+                        ):
                             self.context[-1] = cfg._filter[0] + cfg._filter[1]
                         elif char == cfg._family[0]:
                             self.context.append(cfg._family[0])
@@ -70,10 +74,16 @@ class DeepParser:
                         if len(self.context) and self.context[-1] == cfg._idorarg:
                             self.add_idorarg()
 
-                        if char == cfg._filter[2] and self.context[-1] == cfg._filter[0] + cfg._filter[1]:
+                        if (
+                            char == cfg._filter[2]
+                            and self.context[-1] == cfg._filter[0] + cfg._filter[1]
+                        ):
                             self.context.pop()
                             self.add_filter(self.get_filter_by_idandargs())
-                        elif char == cfg._family[1] and self.context[-1] == cfg._family[0]:
+                        elif (
+                            char == cfg._family[1]
+                            and self.context[-1] == cfg._family[0]
+                        ):
                             self.add_filter(self.apply_operators(self.families.pop()))
                             self.context.pop()
 
@@ -87,7 +97,7 @@ class DeepParser:
                         self.operators.append(operator.or_)
 
                 elif not self.context:
-                    raise SyntaxError('Request interpreter needs a starting condition')
+                    raise SyntaxError("Request interpreter needs a starting condition")
                 else:
                     self.concate_idorarg(char)
 
@@ -95,7 +105,7 @@ class DeepParser:
                 self.compiled = self.apply_operators(self.compiled)
 
         if len(self.context):
-            raise SyntaxError('Invalid syntax of the request interpreter')
+            raise SyntaxError("Invalid syntax of the request interpreter")
 
         compiled, self.compiled = self.compiled, []
         return compiled or False
@@ -103,7 +113,7 @@ class DeepParser:
     def add_idorarg(self):
         self.filter_idandargs.append(self.idorarg)
         self.context.pop()
-        self.idorarg = ''
+        self.idorarg = ""
 
     def concate_idorarg(self, char):
         if self.context[-1] != cfg._idorarg:
@@ -112,7 +122,11 @@ class DeepParser:
 
     def add_filter(self, fltr):
         if fltr:
-            self.families[-1].append(fltr) if len(self.families) else self.compiled.append(fltr)
+            (
+                self.families[-1].append(fltr)
+                if len(self.families)
+                else self.compiled.append(fltr)
+            )
 
     def get_filter_by_idandargs(self):
         if len(self.filter_idandargs) and self.filter_idandargs[0] in self.filters:
@@ -139,14 +153,16 @@ class DeepParser:
         # Applique les opérateurs aux filtres
         for i in range(1, len(filters)):
             if self.operators:
-                operator_func = self.operators.pop(0)  # Prend le prochain opérateur dans la pile
+                operator_func = self.operators.pop(
+                    0
+                )  # Prend le prochain opérateur dans la pile
             result = operator_func(result, filters[i])
 
         return result
 
     def get_arg_order(self, arg):
-        assoc = arg.replace('-', '')
-        direc = '-' if arg.startswith('-') else ''
+        assoc = arg.replace("-", "")
+        direc = "-" if arg.startswith("-") else ""
         field = self.order_association.get(assoc, assoc)
         if self.order_authorized:
             if assoc in self.order_authorized:
@@ -158,11 +174,11 @@ class DeepParser:
     def order_by(self):
         args = []
         if self.order:
-            args += [o.replace('.', '__') for o in self.order.split(self.separator)]
-        args_base = [arg.replace('-', '') for arg in args]
+            args += [o.replace(".", "__") for o in self.order.split(self.separator)]
+        args_base = [arg.replace("-", "") for arg in args]
         if len(self.order_base):
             for ord_base in self.order_base:
-                if ord_base.replace('-', '') not in args_base:
+                if ord_base.replace("-", "") not in args_base:
                     args.append(ord_base)
         return [
             result for arg in args if (result := self.get_arg_order(arg)) is not None
@@ -178,15 +194,14 @@ class DeepParser:
 
     def _apply_distinct(self):
         if self.distinct:
-            distinct_method = type(self.distinct)
-            if distinct_method == str:
-                if self.distinct == 'count':
-                    self.queryset = self.queryset.annotate(Count('id'))
+            if isinstance(self.distinct, str):
+                if self.distinct == "count":
+                    self.queryset = self.queryset.annotate(Count("id"))
                 else:
                     self.queryset = self.queryset.distinct(self.distinct)
-            elif distinct_method == bool:
+            elif isinstance(self.distinct, bool):
                 self.queryset = self.queryset.distinct()
-            elif distinct_method in [list, tuple]:
+            elif isinstance(self.distinct, (list, tuple)):
                 self.queryset = self.queryset.distinct(*self.distinct)
 
     def _apply_ordering(self):
@@ -200,5 +215,3 @@ class DeepParser:
         self._apply_distinct()
         self._apply_ordering()
         return self.queryset
-
-

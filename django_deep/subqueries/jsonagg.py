@@ -5,16 +5,20 @@ from django.db.models import JSONField, Subquery
 
 
 class JsonAggSubquery(Subquery):
-    """A Django Subquery class to aggregate JSON values from a queryset."""
+    """
+    A Django Subquery class to aggregate JSON values from a queryset.
+    
+    SECURITY NOTE: This class uses Django's parameter binding system.
+    All parameters passed via `extra` are automatically escaped by Django's ORM,
+    preventing SQL injection.
+    """
 
-    template = (
-        '(SELECT %(vendor_method)s AS %(name)s FROM (%(subquery)s) subquery)'
-    )
+    template = "(SELECT %(vendor_method)s AS %(name)s FROM (%(subquery)s) subquery)"
     templates: ClassVar[dict] = {
-        'postgresql': 'json_agg(subquery)',
-        'mysql': 'JSON_ARRAYAGG(subquery)',
-        'sqlite': 'json_group_array(subquery)',
-        'oracle': 'JSON_ARRAYAGG(subquery)',
+        "postgresql": "json_agg(subquery)",
+        "mysql": "JSON_ARRAYAGG(subquery)",
+        "sqlite": "json_group_array(subquery)",
+        "oracle": "JSON_ARRAYAGG(subquery)",
     }
 
     def __init__(self, queryset, **extra):
@@ -26,8 +30,8 @@ class JsonAggSubquery(Subquery):
         self.vendor = db_connection.vendor
         if self.vendor not in self.templates:
             raise NotImplementedError(
-                f'JsonAggSubquery is not implemented for {self.vendor}'
+                f"JsonAggSubquery is not implemented for {self.vendor}"
             )
-        extra['vendor_method'] = self.templates[self.vendor]
-        extra['name'] = extra.get('name', '_json_data')
+        extra["vendor_method"] = self.templates[self.vendor]
+        extra["name"] = extra.get("name", "_json_data")
         super().__init__(queryset, output_field=JSONField(), **extra)

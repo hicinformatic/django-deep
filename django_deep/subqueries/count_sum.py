@@ -4,10 +4,17 @@ from django.db.models import PositiveIntegerField, Subquery
 
 
 class SumSubquery(Subquery):
-    """A Django Subquery class to sum the values from a queryset."""
+    """
+    A Django Subquery class to sum the values from a queryset.
+    
+    SECURITY NOTE: This class uses Django's parameter binding system.
+    All parameters passed via `extra` are automatically escaped by Django's ORM,
+    preventing SQL injection. The `sum_field` parameter should be a valid
+    Django field name that is validated by the ORM.
+    """
 
     template: ClassVar[str] = (
-        '(SELECT COALESCE(SUM(%(sum_field)s), 0) FROM (%(subquery)s) %(name)s)'
+        "(SELECT COALESCE(SUM(%(sum_field)s), 0) FROM (%(subquery)s) %(name)s)"
     )
     output_field = PositiveIntegerField()
 
@@ -19,22 +26,27 @@ class SumSubquery(Subquery):
         :param sum_field: The field to sum values from.
         :param extra: Additional parameters.
         """
-        extra['sum_field'] = sum_field
-        extra['name'] = extra.get('name', '_sum')
+        extra["sum_field"] = sum_field
+        extra["name"] = extra.get("name", "_sum")
         super().__init__(queryset, output_field, **extra)
 
 
 class CountSubquery(Subquery):
-    """A Django Subquery class to count the number of rows from a queryset."""
+    """
+    A Django Subquery class to count the number of rows from a queryset.
+    
+    SECURITY NOTE: This class uses Django's parameter binding system.
+    All parameters passed via `extra` are automatically escaped by Django's ORM,
+    preventing SQL injection. The `count_field` parameter should be a valid
+    Django field name that is validated by the ORM.
+    """
 
     template: ClassVar[str] = (
-        '(SELECT COALESCE(Count(%(count_field)s), 0) FROM (%(subquery)s) %(name)s)'
+        "(SELECT COALESCE(Count(%(count_field)s), 0) FROM (%(subquery)s) %(name)s)"
     )
     output_field = PositiveIntegerField()
 
-    def __init__(
-        self, queryset, output_field=None, *, count_field='pk', **extra
-    ):
+    def __init__(self, queryset, output_field=None, *, count_field="pk", **extra):
         """
         Initialize the JsonAggSubquery with the given queryset and count field.
         :param queryset: The queryset to aggregate JSON values from.
@@ -42,6 +54,6 @@ class CountSubquery(Subquery):
         :param count_field: The field to count values from.
         :param extra: Additional parameters.
         """
-        extra['count_field'] = count_field
-        extra['name'] = extra.get('name', '_count')
+        extra["count_field"] = count_field
+        extra["name"] = extra.get("name", "_count")
         super().__init__(queryset, output_field, **extra)

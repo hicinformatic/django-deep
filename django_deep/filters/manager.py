@@ -44,14 +44,15 @@ class DeepFilterManager:
         """
         Active un filtre en fonction du paramètre dans l'URL.
         Le filtre est activé si le paramètre existe et n'est pas None.
-        Si l'opérateur `-=` est trouvé dans la valeur, il marque le filtre comme négatif.
+        Si l'opérateur `-=` est trouvé dans la valeur,
+        il marque le filtre comme négatif.
         """
         param_name = filter_instance.field
         filter_value = params.get(param_name)
 
         # Vérification de la négation avec `-=` dans l'URL
         negate = False
-        if filter_value and filter_value.startswith('-='):
+        if filter_value and filter_value.startswith("-="):
             negate = True
             filter_value = filter_value[
                 2:
@@ -63,7 +64,8 @@ class DeepFilterManager:
                 field=filter_instance.field, value=filter_value
             )
 
-            # Si c'est une négation, on ajuste le filtre pour appliquer la logique inverse
+            # Si c'est une négation, on ajuste le filtre
+            # pour appliquer la logique inverse
             if negate:
                 activated_filter = self.apply_negation(activated_filter)
 
@@ -83,11 +85,16 @@ class DeepFilterManager:
         for mandatory_filter in self.mandatory_filters:
             param_name = {mandatory_filter}
             if not params.get(param_name):
-                raise PermissionDenied(f"Le filtre obligatoire '{mandatory_filter}' est manquant.")
+                raise PermissionDenied(
+                    f"Le filtre obligatoire '{mandatory_filter}' est manquant."
+                )
         return True
 
     def get_active_filters(self, params):
-        """Retourne une liste des filtres activés en fonction des paramètres présents dans la requête."""
+        """
+        Retourne une liste des filtres activés
+        en fonction des paramètres présents dans la requête.
+        """
         # Vérifier que les filtres obligatoires sont présents avant d'activer les autres
         self.check_mandatory_filters(params)
 

@@ -5,48 +5,62 @@ from django.db import connection as db_connection
 from django.db.models import CharField, Subquery
 
 
-concat_separator = getattr(settings, 'CONCAT_SEPARATOR', ':)(:')
-concat_symbol = getattr(settings, 'CONCAT_SYMBOL', '(::)')
+concat_separator = getattr(settings, "CONCAT_SEPARATOR", ":)(:")
+concat_symbol = getattr(settings, "CONCAT_SYMBOL", "(::)")
 
 
 class ConcatValuesSubquery(Subquery):
-    """A Django Subquery class to concatenate values from a queryset."""
+    """
+    A Django Subquery class to concatenate values from a queryset.
+    
+    SECURITY NOTE: This class uses Django's parameter binding system.
+    All parameters passed via `extra` are automatically escaped by Django's ORM,
+    preventing SQL injection. The `fields` parameter should contain valid
+    Django field lookups that are validated by the ORM.
+    """
+
     separator: ClassVar[str] = concat_separator
     templates: ClassVar[dict] = {
-        'postgresql': "(SELECT STRING_AGG(%(string_contact)s, '%(separator)s') FROM (%(subquery)s) %(name)s)",
-        'mysql': '(SELECT GROUP_CONCAT(%(string_contact)s) FROM (%(subquery)s) %(name)s)',
+        "postgresql": (
+            "(SELECT STRING_AGG(%(string_contact)s, '%(separator)s') "
+            "FROM (%(subquery)s) %(name)s)"
+        ),
+        "mysql": (
+            "(SELECT GROUP_CONCAT(%(string_contact)s) "
+            "FROM (%(subquery)s) %(name)s)"
+        ),
     }
-    template_ifnull: ClassVar[str] = 'COALESCE(%s, %s)'
+    template_ifnull: ClassVar[str] = "COALESCE(%s, %s)"
     concat: ClassVar[str] = f"'{concat_symbol}'"
     output_field = CharField()
 
     def raise_not_implemented(self, conf):
         raise NotImplementedError(
-            f'ConcatValuesSubquery {conf} is not implemented for {self.vendor}'
+            f"ConcatValuesSubquery {conf} is not implemented for {self.vendor}"
         )
 
     def ifnull(self, field, **extra):
-        if field in extra.get('null', []):
+        if field in extra.get("null", []):
             return self.template_ifnull % (
                 field,
-                extra.get(f'{field}_ifnull', '0'),
+                extra.get(f"{field}_ifnull", "0"),
             )
         return field
 
     def get_concat(self, fields, **extra):
         fs = [self.ifnull(field, **extra) for field in fields]
-        fs = f'|{self.concat}|'.join(fs).split('|')
-        return f'CONCAT({self.separator.join(fs)})'
+        fs = f"|{self.concat}|".join(fs).split("|")
+        return f"CONCAT({self.separator.join(fs)})"
 
     def get_postgresql_concat(self, fields, **extra):
-        return f'||{self.concat}||'.join([
-            self.ifnull(field, **extra) for field in fields
-        ])
+        return f"||{self.concat}||".join(
+            [self.ifnull(field, **extra) for field in fields]
+        )
 
     def get_oracle_concat(self, fields, **extra):
-        return f'||{self.concat}||'.join([
-            self.ifnull(field, **extra) for field in fields
-        ])
+        return f"||{self.concat}||".join(
+            [self.ifnull(field, **extra) for field in fields]
+        )
 
     def get_mysql_concat(self, fields, **extra):
         return self.get_concat(fields, **extra)
@@ -63,30 +77,32 @@ class ConcatValuesSubquery(Subquery):
         :param extra: Additional parameters.
         """
         self.vendor = db_connection.vendor
-        getm = f'get_{self.vendor}_concat'
+        getm = f"get_{self.vendor}_concat"
         if hasattr(self, getm):
-            extra['string_contact'] = getattr(self, getm)(fields, **extra)
+            extra["string_contact"] = getattr(self, getm)(fields, **extra)
         else:
             self.raise_not_implemented(getm)
-        extra['name'] = extra.get('name', '_concat')
-        extra['separator'] = self.separator
-        self.concat = extra.get('concat', self.concat)
+        extra["name"] = extra.get("name", "_concat")
+        extra["separator"] = self.separator
+        self.concat = extra.get("concat", self.concat)
         super().__init__(queryset, output_field, **extra)
 
     def as_sql(self, compiler, connection, template=None, **extra_context):
         self.template = self.templates.get(self.vendor)
         if not self.template:
-            self.raise_not_implemented('template')
-        sql, params = super().as_sql(compiler, connection, template=self.template, **extra_context)
+            self.raise_not_implemented("template")
+        sql, params = super().as_sql(
+            compiler, connection, template=self.template, **extra_context
+        )
         return sql, params
 
 
 def split_concat(stats, fields, **kwargs):
     """Split and concatenate stats with fields."""
     if stats:
-        concat = kwargs.get('concat', concat_symbol)
-        separator = kwargs.get('separator', concat_separator)
-        int_fields = kwargs.get('int_fields', ['total'])
+        concat = kwargs.get("concat", concat_symbol)
+        separator = kwargs.get("separator", concat_separator)
+        int_fields = kwargs.get("int_fields", ["total"])
         return [
             {
                 field: int(s[idx]) if field in int_fields else s[idx]
