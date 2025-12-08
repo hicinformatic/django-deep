@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from django.db import connection as db_connection
 from django.db.models import (
@@ -30,29 +30,34 @@ class JsonExtract(Func):
         "oracle": "JSON_VALUE(%(json_field)s, '$.%(data_path)s')",
     }
 
-    def get_data_postgresql(self, data):
+    def get_data_postgresql(self, data: str) -> str:
+        """Transform data path for PostgreSQL."""
         return ",".join(data.split("__"))
 
-    def get_data_default(self, data):
+    def get_data_default(self, data: str) -> str:
+        """Transform data path for default databases."""
         return ".".join(data.split("__"))
 
-    def __init__(self, json_field, data_path, **extra):
+    def __init__(self, json_field: str, data_path: str, **extra: Any) -> None:
         self.vendor = db_connection.vendor
         if self.vendor not in self.templates:
             raise NotImplementedError(
-                f"JsonExtract n'est pas disponible pour la base {self.vendor}"
+                f"JsonExtract is not available for database {self.vendor}"
             )
         extra["json_field"] = json_field
-        extra["data_path"] = getattr(
+        get_data_method = getattr(
             self, f"get_data_{self.vendor}", self.get_data_default
-        )(data_path)
+        )
+        extra["data_path"] = get_data_method(data_path)
         self.template = self.templates[self.vendor]
         super().__init__(**extra)
 
 
 class JsonExtractDate(JsonExtract):
+    """Extract date from JSON field."""
+
     output_field = DateField()
-    templates = {
+    templates: ClassVar[dict] = {
         "postgresql": "TO_DATE(%(json_field)s #>> '{%(data_path)s}', 'YYYY-MM-DD')",
         "mysql": (
             "CAST(JSON_UNQUOTE(JSON_EXTRACT(%(json_field)s, "
@@ -66,11 +71,11 @@ class JsonExtractDate(JsonExtract):
     }
 
 
-def age_expr_from_date_expr(date_expr):
+def age_expr_from_date_expr(date_expr: Any) -> ExpressionWrapper:
     """
-    Retourne une ExpressionWrapper qui calcule l'âge en années
-    à partir d'une Expression date.
-    Compatible PostgreSQL, MySQL, SQLite et Oracle.
+    Return ExpressionWrapper that calculates age in years from date expression.
+
+    Compatible with PostgreSQL, MySQL, SQLite and Oracle.
     """
     vendor = db_connection.vendor
 
@@ -85,13 +90,13 @@ def age_expr_from_date_expr(date_expr):
             output_field=FloatField(),
         )
 
-    if vendor == "mysql":
+    elif vendor == "mysql":
         return ExpressionWrapper(
             Func(now().date(), date_expr, function="DATEDIFF") / 365.25,
             output_field=FloatField(),
         )
 
-    if vendor == "sqlite":
+    elif vendor == "sqlite":
         return ExpressionWrapper(
             Func(
                 "now",
@@ -103,11 +108,11 @@ def age_expr_from_date_expr(date_expr):
             output_field=FloatField(),
         )
 
-    if vendor == "oracle":
-        # date_diff en jours = CURRENT_DATE - date_expr
+    elif vendor == "oracle":
         return ExpressionWrapper(
             (Func("CURRENT_DATE") - date_expr) / 365.25,
             output_field=FloatField(),
         )
 
-    raise NotImplementedError(f"Calcul d’âge non supporté pour {vendor}")
+    else:
+        raise NotImplementedError(f"Age calculation not supported for {vendor}")

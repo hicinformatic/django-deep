@@ -1,7 +1,7 @@
-from typing import ClassVar
-from django.db.models import Func
+from typing import Any, ClassVar
+
 from django.db import connection as db_connection
-from django.db.models import TextField
+from django.db.models import Func, TextField
 
 
 class JsonExtract(Func):
@@ -29,17 +29,19 @@ class JsonExtract(Func):
         "oracle": "JSON_VALUE(%(json_field)s, '$.%(data_path)s')",
     }
 
-    def get_data_postgresql(self, data):
+    def get_data_postgresql(self, data: str) -> str:
+        """Transform data path for PostgreSQL."""
         return ",".join(data.split("__"))
 
-    def get_data_default(self, data):
+    def get_data_default(self, data: str) -> str:
+        """Transform data path for default databases."""
         return ".".join(data.split("__"))
 
-    def __init__(self, json_field, data_path, **extra):
+    def __init__(self, json_field: str, data_path: str, **extra: Any) -> None:
         self.vendor = db_connection.vendor
         if self.vendor not in self.templates:
             raise NotImplementedError(
-                f"JsonExtract n'est pas disponible pour la base {self.vendor}"
+                f"JsonExtract is not available for database {self.vendor}"
             )
         extra["json_field"] = json_field
         extra["data_path"] = getattr(

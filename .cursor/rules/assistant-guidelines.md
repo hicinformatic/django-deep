@@ -19,6 +19,9 @@ Django Deep est une bibliothèque permettant de créer des filtres SQL complexes
 - Prefer f-strings over .format() or % formatting
 - Use pathlib.Path instead of os.path when possible
 - Prefer list/dict comprehensions when readable
+- Use type hints for function parameters and return types
+- Keep comments minimal - only add comments to resolve ambiguity
+- All comments and docstrings must be in English
 
 ## Django ORM Specific
 - Use Django ORM instead of raw SQL when possible

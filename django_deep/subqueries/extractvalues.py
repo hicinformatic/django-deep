@@ -1,8 +1,8 @@
-from django.db import connection as db_connection
+from typing import Any, ClassVar, Optional
+
 from django.conf import settings
-from django.db.models import Field, CharField
-from django.db.models import Subquery
-from typing import ClassVar
+from django.db import connection as db_connection
+from django.db.models import CharField, Field, QuerySet, Subquery
 
 
 concat_symbol = getattr(settings, "CONCAT_SYMBOL", "(::)")
@@ -24,17 +24,23 @@ class ExtractValueSubquery(Subquery):
     )
 
     def __init__(
-        self, queryset, output_field: Field = None, *, field="pk", default=None, **extra
-    ):
+        self,
+        queryset: QuerySet,
+        output_field: Optional[Field] = None,
+        *,
+        field: str = "pk",
+        default: Any = None,
+        **extra: Any,
+    ) -> None:
         """
         Initialize the ExtractValueSubquery.
 
-        :param queryset: The queryset to select from.
+        :param queryset: The queryset to select from
         :param output_field: The output field type
-            (e.g., IntegerField, CharField, DateField).
-        :param field: The field to extract from the first row.
-        :param default: Value to return if no row exists.
-        :param extra: Additional parameters.
+            (e.g., IntegerField, CharField, DateField)
+        :param field: The field to extract from the first row
+        :param default: Value to return if no row exists
+        :param extra: Additional parameters
         """
         extra["field"] = field
         extra["default"] = repr(default) if default is not None else "NULL"
@@ -60,21 +66,29 @@ class ExtractMultipleValuesSubquery(Subquery):
     output_field = CharField()
     concat: ClassVar[str] = f"'{concat_symbol}'"
 
-    def __init__(self, queryset, output_field=None, *, fields, default=None, **extra):
+    def __init__(
+        self,
+        queryset: QuerySet,
+        output_field: Optional[CharField] = None,
+        *,
+        fields: list,
+        default: Any = None,
+        **extra: Any,
+    ) -> None:
         """
-        :param queryset: The queryset to select from.
-        :param output_field: The output field type.
-        :param fields: List of fields to concatenate from the first row.
-        :param default: Value to return if no row exists.
-        :param extra: Additional parameters.
+        Initialize ExtractMultipleValuesSubquery.
+
+        :param queryset: The queryset to select from
+        :param output_field: The output field type
+        :param fields: List of fields to concatenate from the first row
+        :param default: Value to return if no row exists
+        :param extra: Additional parameters
         """
         self.vendor = db_connection.vendor
-        # Générer la concaténation des colonnes
-        string_concat = (
-            f" || {self.concat} || ".join(fields)
-            if self.vendor == "postgresql"
-            else f"CONCAT({', '.join(fields)})"
-        )
+        if self.vendor == "postgresql":
+            string_concat = f" || {self.concat} || ".join(fields)
+        else:
+            string_concat = f"CONCAT({', '.join(fields)})"
         extra["string_concat"] = string_concat
         extra["default"] = repr(default) if default is not None else "NULL"
         extra["name"] = extra.get("name", "_first_row_concat")

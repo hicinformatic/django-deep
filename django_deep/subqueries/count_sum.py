@@ -1,6 +1,6 @@
-from typing import ClassVar
+from typing import Any, ClassVar, Optional
 
-from django.db.models import PositiveIntegerField, Subquery
+from django.db.models import PositiveIntegerField, QuerySet, Subquery
 
 
 class SumSubquery(Subquery):
@@ -18,13 +18,21 @@ class SumSubquery(Subquery):
     )
     output_field = PositiveIntegerField()
 
-    def __init__(self, queryset, output_field=None, *, sum_field, **extra):
+    def __init__(
+        self,
+        queryset: QuerySet,
+        output_field: Optional[PositiveIntegerField] = None,
+        *,
+        sum_field: str,
+        **extra: Any,
+    ) -> None:
         """
         Initialize the SumSubquery with the given queryset and sum field.
-        :param queryset: The queryset to sum values from.
-        :param output_field: The output field type.
-        :param sum_field: The field to sum values from.
-        :param extra: Additional parameters.
+
+        :param queryset: The queryset to sum values from
+        :param output_field: The output field type
+        :param sum_field: The field to sum values from
+        :param extra: Additional parameters
         """
         extra["sum_field"] = sum_field
         extra["name"] = extra.get("name", "_sum")
@@ -42,17 +50,25 @@ class CountSubquery(Subquery):
     """
 
     template: ClassVar[str] = (
-        "(SELECT COALESCE(Count(%(count_field)s), 0) FROM (%(subquery)s) %(name)s)"
+        "(SELECT COALESCE(COUNT(%(count_field)s), 0) FROM (%(subquery)s) %(name)s)"
     )
     output_field = PositiveIntegerField()
 
-    def __init__(self, queryset, output_field=None, *, count_field="pk", **extra):
+    def __init__(
+        self,
+        queryset: QuerySet,
+        output_field: Optional[PositiveIntegerField] = None,
+        *,
+        count_field: str = "pk",
+        **extra: Any,
+    ) -> None:
         """
-        Initialize the JsonAggSubquery with the given queryset and count field.
-        :param queryset: The queryset to aggregate JSON values from.
-        :param output_field: The output field type.
-        :param count_field: The field to count values from.
-        :param extra: Additional parameters.
+        Initialize the CountSubquery with the given queryset and count field.
+
+        :param queryset: The queryset to count rows from
+        :param output_field: The output field type
+        :param count_field: The field to count values from
+        :param extra: Additional parameters
         """
         extra["count_field"] = count_field
         extra["name"] = extra.get("name", "_count")

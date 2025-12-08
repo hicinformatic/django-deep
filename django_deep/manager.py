@@ -1,32 +1,39 @@
-from django.db.models import Manager
+from typing import Any
+
+from django.db.models import Manager, QuerySet
+
 from .functions import JsonExtract
 from .subqueries import (
     ConcatValuesSubquery,
     CountSubquery,
-    SumSubquery,
     JsonAggSubquery,
     MethodFromSubquery,
+    SumSubquery,
 )
 
 
 class DeepManager(Manager):
-    """A custom manager"""
+    """Custom manager with subquery and JSON extraction support."""
 
-    select_related = ()
-    prefetch_related = ()
+    select_related: tuple = ()
+    prefetch_related: tuple = ()
 
-    # Simplification en regroupant la logique des sous-requêtes
-    # dans une méthode générique
-    def get_subquery(self, queryset, subquery_class, **extra):
+    def get_subquery(
+        self, queryset: QuerySet, subquery_class: type, **extra: Any
+    ) -> Any:
+        """Generic method to create subqueries."""
         return subquery_class(queryset, **extra)
 
-    def get_json_extract(self, json_field, data_path):
+    def get_json_extract(self, json_field: str, data_path: str) -> JsonExtract:
+        """Create JsonExtract expression."""
         return JsonExtract(json_field, data_path)
 
-    def get_prefetch_related(self, prefetch_related):
+    def get_prefetch_related(self, prefetch_related: tuple) -> Any:
+        """Get prefetch related configuration."""
         return (getattr(self, f"prefetch_{pr}", pr) for pr in prefetch_related)
 
-    def auto_related(self, **kwargs):
+    def auto_related(self, **kwargs: Any) -> QuerySet:
+        """Apply select_related and prefetch_related optimizations."""
         qs = super().get_queryset()
         select_related = kwargs.get("select_related", self.select_related)
         prefetch_related = kwargs.get("prefetch_related", self.prefetch_related)
@@ -36,21 +43,32 @@ class DeepManager(Manager):
             qs = qs.prefetch_related(*self.get_prefetch_related(prefetch_related))
         return qs
 
-    # Méthodes spécialisées pour chaque sous-requête
-    def get_sum_sub_query(self, queryset, sum_field, **extra):
+    def get_sum_sub_query(
+        self, queryset: QuerySet, sum_field: str, **extra: Any
+    ) -> Any:
+        """Create SumSubquery."""
         return self.get_subquery(queryset, SumSubquery, sum_field=sum_field, **extra)
 
-    def get_count_sub_query(self, queryset, count_field="pk", **extra):
+    def get_count_sub_query(
+        self, queryset: QuerySet, count_field: str = "pk", **extra: Any
+    ) -> Any:
+        """Create CountSubquery."""
         return self.get_subquery(
             queryset, CountSubquery, count_field=count_field, **extra
         )
 
-    def get_concat_values_sub_query(self, queryset, fields, **extra):
+    def get_concat_values_sub_query(
+        self, queryset: QuerySet, fields: list, **extra: Any
+    ) -> Any:
+        """Create ConcatValuesSubquery."""
         return self.get_subquery(
             queryset, ConcatValuesSubquery, fields=fields, **extra
         )
 
-    def get_method_from_sub_query(self, queryset, agg_field, **extra):
+    def get_method_from_sub_query(
+        self, queryset: QuerySet, agg_field: str, **extra: Any
+    ) -> Any:
+        """Create MethodFromSubquery."""
         return self.get_subquery(
             queryset,
             MethodFromSubquery,
@@ -58,5 +76,6 @@ class DeepManager(Manager):
             **extra,
         )
 
-    def get_json_agg_sub_query(self, queryset, **extra):
+    def get_json_agg_sub_query(self, queryset: QuerySet, **extra: Any) -> Any:
+        """Create JsonAggSubquery."""
         return self.get_subquery(queryset, JsonAggSubquery, **extra)
