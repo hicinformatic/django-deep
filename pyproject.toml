@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "django-deep"
+version = "0.1.0"
+description = "Django Enhanced Expression Parser"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "GPL-3.0-or-later"}
+authors = [
+  { name = "Octolo", email = "dev@octolo.tech" }
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Framework :: Django",
+]
+keywords = ["django", "parser", "expression", "deep"]
+dependencies = ["Django>=3.2"]
+
+[tool.setuptools.dynamic]
+version = { attr = "django_deep.__version__" }
+
+[project.urls]
+"Homepage" = "https://github.com/hicinformatic/django-deep"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "ruff",
+    "pytest",
+    "pytest-django",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F"]

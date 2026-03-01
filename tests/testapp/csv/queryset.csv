@@ -1,0 +1,8 @@
+model,test,field,value
+User,order_by,username,
+Role,order_by,nb_users,
+User,order_by,created_at,
+User,distinct_count,user_to_emails,
+User,distinct_bool,user_to_emails,
+User,distinct_field,username,id
+User,distinct_list,username,id:username
