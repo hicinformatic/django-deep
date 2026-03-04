@@ -16,7 +16,6 @@ class SumSubquery(Subquery):
     template: ClassVar[str] = (
         "(SELECT COALESCE(SUM(%(sum_field)s), 0) FROM (%(subquery)s) %(name)s)"
     )
-    output_field = PositiveIntegerField()
 
     def __init__(
         self,
@@ -34,8 +33,10 @@ class SumSubquery(Subquery):
         :param sum_field: The field to sum values from
         :param extra: Additional parameters
         """
+        print(f"Initializing SumSubquery with sum_field: {sum_field} and extra: {extra}")
         extra["sum_field"] = sum_field
         extra["name"] = extra.get("name", "_sum")
+        self.output_field = output_field
         super().__init__(queryset, output_field, **extra)
 
 
